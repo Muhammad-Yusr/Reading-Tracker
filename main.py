@@ -1,18 +1,12 @@
-import mysql.connector as msq
-from pdf2image import convert_from_path
+import sqlite3 as sq3
+import pdf2image
 
-db = msq.connect(
-    host="localhost",
-    user="root",
-    password="55362146",
-)
+db = sq3.connect("database.db")
 cu = db.cursor()
 
 def setup():
-    cu.execute("CREATE DATABASE IF NOT EXISTS books")
-    cu.execute("USE books")
     cu.execute("""CREATE TABLE IF NOT EXISTS book (
-                id INT PRIMARY KEY AUTO_INCREMENT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title VARCHAR(100),
                 author VARCHAR(100),
                 category VARCHAR(100))""")
@@ -21,7 +15,7 @@ def add_book():
     title = input("Enter book title: ")
     author = input("Enter book author: ")
     category = input("Enter book category: ")
-    cu.execute("INSERT INTO book (title, author, category) VALUES (%s, %s, %s)", (title, author, category))
+    cu.execute("INSERT INTO book (title, author, category) VALUES (?, ?, ?)", (title, author, category))
     db.commit()
 def view_books():
     cu.execute("SELECT * FROM book")
@@ -30,7 +24,7 @@ def view_books():
         print(f"ID: {book[0]}, Title: {book[1]}, Author: {book[2]}, Category: {book[3]}")
 def delete_book():
     letters = input("Enter the first few letters of the book to delete: ")
-    cu.execute("DELETE FROM book WHERE title LIKE %s", (f"{letters}%",))
+    cu.execute("DELETE FROM book WHERE title LIKE ?", (f"{letters}%",))
     db.commit()
     
 setup()
