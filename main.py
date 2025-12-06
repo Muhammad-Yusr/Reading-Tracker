@@ -1,4 +1,5 @@
 import mysql.connector as msq
+from pdf2image import convert_from_path
 
 db = msq.connect(
     host="localhost",
