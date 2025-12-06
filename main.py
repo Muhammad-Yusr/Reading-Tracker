@@ -11,10 +11,7 @@ def setup():
                 author VARCHAR(100),
                 category VARCHAR(100))""")
     db.commit()
-def add_book():
-    title = input("Enter book title: ")
-    author = input("Enter book author: ")
-    category = input("Enter book category: ")
+def add_book(title, author, category):
     cu.execute("INSERT INTO book (title, author, category) VALUES (?, ?, ?)", (title, author, category))
     db.commit()
 def view_books():
@@ -28,20 +25,3 @@ def delete_book():
     db.commit()
     
 setup()
-
-while True:
-    print("1. Add Book")
-    print("2. View Books")
-    print("3. Delete Book")
-    print("4. Exit")
-    choice = input("Enter your choice: ")
-    if choice == '1':
-        add_book()
-    elif choice == '2':
-        view_books()
-    elif choice == '3':
-        delete_book()
-    elif choice == '4':
-        break
-    else:
-        print("Invalid choice. Please try again.")

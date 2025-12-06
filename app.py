@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QVBoxLayout,
 from PyQt5.QtCore import QUrl
 import sys
 import re
+import main
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
 
