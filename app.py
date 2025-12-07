@@ -1,11 +1,12 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl
 import sys
 import re
 import main
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument
+import requests
 
 class Window(QMainWindow):
     def __init__(self):
@@ -24,13 +25,14 @@ class Window(QMainWindow):
         #button.clicked.connect(self.addFile)
 
         form = QFormLayout()
-        self.inputs = {
-            "Name": QLineEdit(placeholderText='Name'),
-            "Author": QLineEdit(placeholderText='Author'),
-            "Category": QLineEdit(placeholderText='Category')
-        }
-        for key, val in self.inputs.items():
-            form.addWidget(val)
+        name = QLineEdit(placeholderText='Name')
+        cat = QLineEdit(placeholderText='Category')
+        suggestion_list = []
+        suggestions = QCompleter(suggestion_list)
+        name.setCompleter(suggestions)
+        name.textChanged.connect(self.search)
+        form.addWidget(name)
+        form.addWidget(cat)
         add = QPushButton()
         add.setText("Add")
         add.clicked.connect(self.appendData)
@@ -40,13 +42,16 @@ class Window(QMainWindow):
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         cen_widget.setLayout(hbox)
+    def search(self, text):
+        url = "https://openlibrary.org/search.json"
+        text = text.replace(" ", "+")
+        req = f"{url}?q={text}"
+        response = requests.get(req)
+        if response.status_code == 200:
+            print(response.json()["docs"][0]["title"])
 
     def appendData(self):
-        data = {key: val.text() for key, val in self.inputs.items()}
-        name = data['Name']
-        author = data['Author']
-        category = data['Category']
-        main.add_book(name, author, category)
+        pass
 
     #def addFile(self):
     #    dialog = QFileDialog.getOpenFileUrl(self, "Select PDF File", QUrl(), "PDF (*.pdf)")
