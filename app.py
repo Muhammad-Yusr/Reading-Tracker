@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
 import main
@@ -25,31 +25,43 @@ class Window(QMainWindow):
         #button.clicked.connect(self.addFile)
 
         form = QFormLayout()
-        name = QLineEdit(placeholderText='Name')
+        self.name = QLineEdit(placeholderText='Name')
         cat = QLineEdit(placeholderText='Category')
-        suggestion_list = []
-        suggestions = QCompleter(suggestion_list)
-        name.setCompleter(suggestions)
-        name.textChanged.connect(self.search)
-        form.addWidget(name)
+        self.suggestion_list = []
+        self.model = QStringListModel(self.suggestion_list)
+        self.suggestions = QCompleter()
+        self.suggestions.setModel(self.model)
+        self.suggestions.setCompletionMode(QCompleter.PopupCompletion)
+        self.suggestions.setCaseSensitivity(Qt.CaseInsensitive)
+        self.name.setCompleter(self.suggestions)
+        self.name.returnPressed.connect(self.search)
+        form.addWidget(self.name)
         form.addWidget(cat)
         add = QPushButton()
         add.setText("Add")
         add.clicked.connect(self.appendData)
         form.addWidget(add)
+        self.label = QLabel()
+        self.label.setText("Press Enter to view suggestions!")
+        form.addWidget(self.label)
         
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         cen_widget.setLayout(hbox)
-    def search(self, text):
+    def search(self):
         url = "https://openlibrary.org/search.json"
-        text = text.replace(" ", "+")
+        text = self.name.text().replace(" ", "+")
         req = f"{url}?q={text}"
         response = requests.get(req)
         if response.status_code == 200:
-            print(response.json()["docs"][0]["title"])
-
+            for i in range(5):
+                title = response.json()["docs"][i]["title"]
+                if not title:
+                    break
+                self.suggestion_list.append(title)
+            self.model.setStringList(self.suggestion_list)
+            self.suggestions.complete()
     def appendData(self):
         pass
 
