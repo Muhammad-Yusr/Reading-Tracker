@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
+from PyQt5.QtWidgets import QComboBox, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
@@ -26,6 +26,11 @@ class Window(QMainWindow):
 
         form = QFormLayout()
         self.name = QLineEdit(placeholderText='Name')
+        self.language = 'English'
+        self.lang = QComboBox()
+        self.lang.addItem('English')
+        self.lang.addItem('Arabic')
+        self.lang.activated.connect(self.setLang) 
         cat = QLineEdit(placeholderText='Category')
         self.suggestion_list = []
         self.model = QStringListModel(self.suggestion_list)
@@ -36,6 +41,7 @@ class Window(QMainWindow):
         self.name.setCompleter(self.suggestions)
         self.name.returnPressed.connect(self.search)
         form.addWidget(self.name)
+        form.addWidget(self.lang)
         form.addWidget(cat)
         add = QPushButton()
         add.setText("Add")
@@ -49,10 +55,18 @@ class Window(QMainWindow):
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         cen_widget.setLayout(hbox)
+    def setLang(self, _):
+        self.language = self.lang.currentText()
+
     def search(self):
         url = "https://openlibrary.org/search.json"
         text = self.name.text().replace(" ", "+")
-        req = f"{url}?q={text}"
+        lang = 'en'
+        if self.language == 'English':
+            lang = 'en'
+        elif self.language == 'Arabic':
+            lang = 'ar'
+        req = f"{url}?q={text}&lang={lang}"
         response = requests.get(req)
         if response.status_code == 200:
             for i in range(5):
