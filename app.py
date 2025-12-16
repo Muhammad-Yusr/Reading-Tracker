@@ -4,8 +4,6 @@ from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
 import main
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
 import requests
 
 class Window(QMainWindow):
