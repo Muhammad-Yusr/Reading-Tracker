@@ -1,5 +1,4 @@
 import sqlite3 as sq3
-import pdf2image
 
 db = sq3.connect("database.db")
 cu = db.cursor()
