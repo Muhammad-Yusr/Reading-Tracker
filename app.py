@@ -29,7 +29,8 @@ class Window(QMainWindow):
         self.lang.addItem('English')
         self.lang.addItem('Arabic')
         self.lang.activated.connect(self.setLang) 
-        cat = QLineEdit(placeholderText='Category')
+        self.cat = QLineEdit(placeholderText='Category')
+        self.author = QLineEdit(placeholderText='Author')
         self.suggestion_list = []
         self.model = QStringListModel(self.suggestion_list)
         self.suggestions = QCompleter()
@@ -40,7 +41,8 @@ class Window(QMainWindow):
         self.name.returnPressed.connect(self.search)
         form.addWidget(self.name)
         form.addWidget(self.lang)
-        form.addWidget(cat)
+        form.addWidget(self.author)
+        form.addWidget(self.cat)
         add = QPushButton()
         add.setText("Add")
         add.clicked.connect(self.appendData)
@@ -75,7 +77,10 @@ class Window(QMainWindow):
             self.model.setStringList(self.suggestion_list)
             self.suggestions.complete()
     def appendData(self):
-        pass
+        title = self.name.text()
+        author = self.author.text()
+        category = self.cat.text()
+        main.add_book(title, author, category)
 
     #def addFile(self):
     #    dialog = QFileDialog.getOpenFileUrl(self, "Select PDF File", QUrl(), "PDF (*.pdf)")
