@@ -50,8 +50,6 @@ class Window(QMainWindow):
 
             grid.addWidget(label1, row, col)
 
-        tab1.setLayout(grid)
-
         tab2 = QWidget()
         self.tabs.addTab(tab2, "Add Books")
 
