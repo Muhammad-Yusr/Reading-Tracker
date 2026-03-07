@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QComboBox, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
+from PyQt5.QtWidgets import QComboBox, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
@@ -17,12 +17,16 @@ class Window(QMainWindow):
         cen_widget = QWidget()
         self.setCentralWidget(cen_widget)
 
-        vbox = QVBoxLayout()
-        #button = QPushButton(self)
-        #button.setText("Open")
-        #button.clicked.connect(self.addFile)
+        main_layout = QVBoxLayout(cen_widget)
+        self.tabs = QTabWidget()
+        main_layout.addWidget(self.tabs)
 
+        tab1 = QWidget()
+        self.tabs.addTab(tab1, "Add Book")
+
+        vbox = QVBoxLayout()
         form = QFormLayout()
+
         self.name = QLineEdit(placeholderText='Name')
         self.language = 'English'
         self.lang = QComboBox()
@@ -54,7 +58,7 @@ class Window(QMainWindow):
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addLayout(form)
-        cen_widget.setLayout(hbox)
+        tab1.setLayout(hbox)
     def setLang(self, _):
         self.language = self.lang.currentText()
 
