@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QComboBox, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
+from PyQt5.QtWidgets import QScrollArea, QComboBox, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
@@ -25,10 +25,32 @@ class Window(QMainWindow):
         tab1 = QWidget()
         self.tabs.addTab(tab1, "My Books")
 
-        grid = QGridLayout()
+        tab1_layout = QVBoxLayout(tab1)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        tab1_layout.addWidget(scroll)
 
-        for i in main.fetch_books():
-            pass
+        content = QWidget()
+        scroll.setWidget(content)
+
+        grid = QGridLayout(content)
+        grid.setSpacing(10)
+        columns = 3
+
+        for i, item in enumerate(main.fetch_books()):
+            text = item[1]
+
+            label1 = QLabel(text)
+            label1.setAlignment(Qt.AlignCenter)
+            label1.setWordWrap(True)
+            label1.setMinimumSize(200, 100)
+
+            row = i // columns
+            col = i % columns
+
+            grid.addWidget(label1, row, col)
+
+        tab1.setLayout(grid)
 
         tab2 = QWidget()
         self.tabs.addTab(tab2, "Add Books")
@@ -90,22 +112,13 @@ class Window(QMainWindow):
                 self.suggestion_list.append(title)
             self.model.setStringList(self.suggestion_list)
             self.suggestions.complete()
+
     def appendData(self):
         title = self.name.text()
         author = self.author.text()
         category = self.cat.text()
         main.add_book(title, author, category)
-
-    #def addFile(self):
-    #    dialog = QFileDialog.getOpenFileUrl(self, "Select PDF File", QUrl(), "PDF (*.pdf)")
-    #    rawurl = str(dialog[0]).split("(")
-    #    path = rawurl[1].replace("file:///", "")
-    #    path = path.replace(")", "")
-    #    path = path.replace("'", "")
-    #    file = open(path, 'rb')
-    #    parser = PDFParser(file)
-    #    doc = PDFDocument(parser)
-    #    print(doc.info)
+        self.initUI()
 
     def changeText(self):
         self.label.setText("Label2")
