@@ -5,6 +5,7 @@ import sys
 import re
 import main
 import requests
+import sqlite3 as sq
 
 class Window(QMainWindow):
     def __init__(self):
@@ -22,7 +23,15 @@ class Window(QMainWindow):
         main_layout.addWidget(self.tabs)
 
         tab1 = QWidget()
-        self.tabs.addTab(tab1, "Add Book")
+        self.tabs.addTab(tab1, "My Books")
+
+        grid = QGridLayout()
+
+        for i in main.fetch_books():
+            pass
+
+        tab2 = QWidget()
+        self.tabs.addTab(tab2, "Add Books")
 
         vbox = QVBoxLayout()
         form = QFormLayout()
@@ -58,7 +67,8 @@ class Window(QMainWindow):
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addLayout(form)
-        tab1.setLayout(hbox)
+        tab2.setLayout(hbox)
+
     def setLang(self, _):
         self.language = self.lang.currentText()
 

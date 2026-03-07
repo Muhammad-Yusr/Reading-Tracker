@@ -18,6 +18,10 @@ def view_books():
     books = cu.fetchall()
     for book in books:
         print(f"ID: {book[0]}, Title: {book[1]}, Author: {book[2]}, Category: {book[3]}")
+def fetch_books():
+    cu.execute("SELECT * FROM book")
+    books = cu.fetchall()
+    return books
 def delete_book():
     letters = input("Enter the first few letters of the book to delete: ")
     cu.execute("DELETE FROM book WHERE title LIKE ?", (f"{letters}%",))
