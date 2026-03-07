@@ -45,10 +45,27 @@ class Window(QMainWindow):
             label1.setWordWrap(True)
             label1.setMinimumSize(200, 100)
 
+            text2 = item[2]
+
+            label2 = QLabel(text2)
+            label2.setAlignment(Qt.AlignJustify)
+            label2.setWordWrap(True)
+            label2.setMinimumSize(200, 100)
+
+            list1 = ["Planning to read", "Reading", "Completed"]
+            text3 = list1[int(item[4])]
+
+            label3 = QLabel(text3)
+            label3.setAlignment(Qt.AlignBottom)
+            label3.setWordWrap(True)
+            label3.setMinimumSize(200, 100)
+
             row = i // columns
             col = i % columns
 
             grid.addWidget(label1, row, col)
+            grid.addWidget(label2, row, col)
+            grid.addWidget(label3, row, col)
 
         tab2 = QWidget()
         self.tabs.addTab(tab2, "Add Books")
@@ -59,8 +76,7 @@ class Window(QMainWindow):
         self.name = QLineEdit(placeholderText='Name')
         self.language = 'English'
         self.lang = QComboBox()
-        self.lang.addItem('English')
-        self.lang.addItem('Arabic')
+        self.lang.addItems(['English', 'Arabic'])
         self.lang.activated.connect(self.setLang) 
         self.cat = QLineEdit(placeholderText='Category')
         self.author = QLineEdit(placeholderText='Author')
@@ -72,10 +88,13 @@ class Window(QMainWindow):
         self.suggestions.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.suggestions)
         self.name.returnPressed.connect(self.search)
+        self.completion = QComboBox()
+        self.completion.addItems(["Planning to read", "Reading", "Completed"])
         form.addWidget(self.name)
         form.addWidget(self.lang)
         form.addWidget(self.author)
         form.addWidget(self.cat)
+        form.addWidget(self.completion)
         add = QPushButton()
         add.setText("Add")
         add.clicked.connect(self.appendData)
@@ -115,7 +134,8 @@ class Window(QMainWindow):
         title = self.name.text()
         author = self.author.text()
         category = self.cat.text()
-        main.add_book(title, author, category)
+        completion = self.completion.currentIndex()
+        main.add_book(title, author, category, completion)
         self.initUI()
 
     def changeText(self):
