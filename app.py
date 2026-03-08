@@ -7,6 +7,12 @@ import main
 import requests
 import sqlite3 as sq
 
+db = sq.connect("database.db")
+cu = db.cursor()
+cu.execute("""CREATE TABLE IF NOT EXISTS covers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                book_id FOREIGN KEY """)
+
 class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
