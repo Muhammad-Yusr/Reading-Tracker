@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QScrollArea, QComboBox, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
+from PyQt5.QtWidgets import QScrollArea, QComboBox, QMenu, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
@@ -38,34 +38,43 @@ class Window(QMainWindow):
         columns = 3
 
         for i, item in enumerate(main.fetch_books()):
-            text = item[1]
+            id = item[0]
+            text1 = item[1]
+            text2 = item[2]
+            list1 = ["Planning to read", "Reading", "Completed"]
+            text3 = list1[int(item[4])]
 
-            label1 = QLabel(text)
+            book_widget = QWidget()
+            book_layout = QVBoxLayout(book_widget)
+
+            label1 = QLabel(text1)
             label1.setAlignment(Qt.AlignCenter)
             label1.setWordWrap(True)
             label1.setMinimumSize(200, 100)
 
-            text2 = item[2]
-
             label2 = QLabel(text2)
-            label2.setAlignment(Qt.AlignJustify)
+            label2.setAlignment(Qt.AlignTop)
             label2.setWordWrap(True)
             label2.setMinimumSize(200, 100)
-
-            list1 = ["Planning to read", "Reading", "Completed"]
-            text3 = list1[int(item[4])]
 
             label3 = QLabel(text3)
             label3.setAlignment(Qt.AlignBottom)
             label3.setWordWrap(True)
             label3.setMinimumSize(200, 100)
 
+            book_layout.addWidget(label2)
+            book_layout.addWidget(label1)
+            book_layout.addWidget(label3)
+
+            book_widget.setProperty("book_id", id)
+            book_widget.setContextMenuPolicy(Qt.CustomContextMenu)
+            book_widget.customContextMenuRequested.connect(
+                lambda pos, w=book_widget: self.show_context_menu(pos, w)
+            )
+
             row = i // columns
             col = i % columns
-
-            grid.addWidget(label1, row, col)
-            grid.addWidget(label2, row, col)
-            grid.addWidget(label3, row, col)
+            grid.addWidget(book_widget, row, col)
 
         tab2 = QWidget()
         self.tabs.addTab(tab2, "Add Books")
@@ -99,14 +108,26 @@ class Window(QMainWindow):
         add.setText("Add")
         add.clicked.connect(self.appendData)
         form.addWidget(add)
-        self.label = QLabel()
-        self.label.setText("Press Enter to view suggestions!")
-        form.addWidget(self.label)
         
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         tab2.setLayout(hbox)
+
+    def show_context_menu(self, pos, widget):
+            book_id = widget.property("book_id")
+            menu = QMenu()
+
+            addcover = menu.addAction("Edit Cover")
+            del_book = menu.addAction("Delete Book")
+
+            action = menu.exec_(widget.mapToGlobal(pos))
+
+            if action == addcover:
+                pass
+            elif action == del_book:
+                pass
+
 
     def setLang(self, _):
         self.language = self.lang.currentText()
