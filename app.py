@@ -1,32 +1,65 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QScrollArea, QComboBox, QMenu, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QScrollArea, QComboBox, QMenu, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
 import sys
 import re
 import main
 import requests
 import sqlite3 as sq
+import cv2
+import os
 
 db = sq.connect("database.db")
 cu = db.cursor()
 cu.execute("""CREATE TABLE IF NOT EXISTS covers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                book_id FOREIGN KEY """)
+                book_id INTEGER,
+                path VARCHAR(256),
+                FOREIGN KEY(book_id) REFERENCES book(id))""")
+cu.execute("""SELECT * FROM covers""")
+print(cu.fetchall())
+
 
 class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
-        self.setGeometry(300, 200, 1000, 600)
+        
         self.setWindowTitle("Reading Progress")
+
+        self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
+        self.setFixedSize(1000, 600)
         self.initUI()
+        
 
     def initUI(self):
         cen_widget = QWidget()
         self.setCentralWidget(cen_widget)
+        cen_widget.setStyleSheet("""
+            background-color: #181825;
+            color: #eff1f5;
+        """)
 
         main_layout = QVBoxLayout(cen_widget)
         self.tabs = QTabWidget()
         main_layout.addWidget(self.tabs)
+        self.tabs.setTabShape(QTabWidget.Rounded)
+        self.tabs.tabBar().setDocumentMode(True)
+        self.tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px transparent;
+                top: -1;
+                background-color: #1e1e2e;
+            }
+            QTabBar::tab {
+				font-family: "JetBrains Mono", monospace;
+                font-size:  15px;
+				background: #1e1e2e;
+            }
+            QTabBar::tab:hover {
+				background: #313244;
+            }         
+        """)
 
         tab1 = QWidget()
         self.tabs.addTab(tab1, "My Books")
@@ -35,6 +68,9 @@ class Window(QMainWindow):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         tab1_layout.addWidget(scroll)
+        scroll.setStyleSheet("""
+			border: 1px transparent;
+		""")
 
         content = QWidget()
         scroll.setWidget(content)
@@ -67,6 +103,46 @@ class Window(QMainWindow):
             label3.setAlignment(Qt.AlignBottom)
             label3.setWordWrap(True)
             label3.setMinimumSize(200, 100)
+            
+            for label in [label1, label2, label3]:
+                shadow = QGraphicsDropShadowEffect()
+                shadow.setBlurRadius(12)
+                shadow.setOffset(2, 2)
+                shadow.setColor(Qt.black)
+                label.setGraphicsEffect(shadow)
+                label.setStyleSheet("""
+                    background: transparent;
+                    font-size: 20px;
+                    font-weight: 800;
+                    font-family: "JetBrains Mono", monospace;
+                """)
+
+            cu.execute("SELECT path FROM covers WHERE book_id = ?", (id,))
+            result = cu.fetchone()
+            path = result[0] if result and result[0] else ""
+            save_path = f"images/{text1.replace(' ', '')}.jpg"
+            if path:
+                clean_path = path.replace("\\", "/")
+                if not os.path.exists(save_path):
+                    img = cv2.imread(clean_path, 1)
+                    img = cv2.resize(img, (300, 400))
+                    img_name = f"{text1.replace(' ', '')}.jpg"
+                    img_path = f"images/{img_name}"
+                    cv2.imwrite(img_path, img)
+                book_widget.setStyleSheet(f"""
+                    QWidget {{
+                        background-image: url({save_path});
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        border-radius: 5px;
+                    }}
+                    QLabel {{
+                        font-size: 20px;
+                        font-weight: 800;
+                        font-family: "JetBrains Mono", monospace;
+                        margin: 2px;
+                    }}
+                """)
 
             book_layout.addWidget(label2)
             book_layout.addWidget(label1)
@@ -119,6 +195,18 @@ class Window(QMainWindow):
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         tab2.setLayout(hbox)
+        
+        for i in [self.name, self.lang, self.author, self.cat, self.completion]:
+            i.setStyleSheet("border: 0.5px solid #7f849c; padding: 2px;")
+        add.setStyleSheet("""
+            QPushButton {
+				border: 0.5px solid #6c7086;
+                padding: 2px;
+            }
+            QPushButton:hover {
+                background: #313244;
+			}"""
+		)
 
     def show_context_menu(self, pos, widget):
             book_id = widget.property("book_id")
@@ -130,7 +218,14 @@ class Window(QMainWindow):
             action = menu.exec_(widget.mapToGlobal(pos))
 
             if action == addcover:
-                pass
+                dialog = QFileDialog.getOpenFileName(
+                    caption = "Select Book Cover",
+                    directory = "./",
+                    filter="Images (*.png *.jpg *.jpeg)"
+                )
+                cu.execute("INSERT INTO covers (book_id, path) values (?, ?)", (book_id, dialog[0]))
+                db.commit()
+                self.initUI()
             elif action == del_book:
                 pass
 

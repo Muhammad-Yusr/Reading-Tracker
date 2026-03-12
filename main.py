@@ -29,4 +29,3 @@ def delete_book():
     db.commit()
     
 setup()
-view_books()
