@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QScrollArea, QComboBox, QMenu, QTabWidget, QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QLabel, QFileDialog, QPushButton, QFormLayout, QCompleter
 from PyQt5.QtCore import QUrl, QStringListModel, Qt
+from PyQt5.QtGui import QIcon
 import sys
 import re
 import main
@@ -9,6 +10,9 @@ import sqlite3 as sq
 import cv2
 import os
 
+if not os.path.exists("images"):
+    os.makedirs("images")
+
 db = sq.connect("database.db")
 cu = db.cursor()
 cu.execute("""CREATE TABLE IF NOT EXISTS covers (
@@ -16,6 +20,7 @@ cu.execute("""CREATE TABLE IF NOT EXISTS covers (
                 book_id INTEGER,
                 path VARCHAR(256),
                 FOREIGN KEY(book_id) REFERENCES book(id))""")
+db.commit()
 cu.execute("""SELECT * FROM covers""")
 print(cu.fetchall())
 
@@ -33,6 +38,12 @@ class Window(QMainWindow):
         
 
     def initUI(self):
+        self.setStyleSheet("""
+            QMainWindow {
+                background: #1e1e2e;
+            }
+        """)
+
         cen_widget = QWidget()
         self.setCentralWidget(cen_widget)
         cen_widget.setStyleSheet("""
@@ -53,8 +64,14 @@ class Window(QMainWindow):
             }
             QTabBar::tab {
 				font-family: "JetBrains Mono", monospace;
-                font-size:  15px;
+                font-size: 15px;
+                font-weight: 600; 
 				background: #1e1e2e;
+                padding: 8px;
+                min-height: 20px;
+                border-radius: 7px;
+                margin-right: 3px;
+                margin-left: 3px;
             }
             QTabBar::tab:hover {
 				background: #313244;
@@ -186,27 +203,49 @@ class Window(QMainWindow):
         form.addWidget(self.author)
         form.addWidget(self.cat)
         form.addWidget(self.completion)
+        button_container = QHBoxLayout()
         add = QPushButton()
         add.setText("Add")
         add.clicked.connect(self.appendData)
-        form.addWidget(add)
-        
+        button_container.addStretch()
+        button_container.addWidget(add)
+        button_container.addStretch()
+        form.addRow(button_container)
+
         hbox = QHBoxLayout()
         hbox.addLayout(vbox)
         hbox.addLayout(form)
         tab2.setLayout(hbox)
         
         for i in [self.name, self.lang, self.author, self.cat, self.completion]:
-            i.setStyleSheet("border: 0.5px solid #7f849c; padding: 2px;")
+            i.setStyleSheet("""border: 0.5px solid #7f849c; padding: 2px; font-size: 15px; font-weight: 100; font-family: "JetBrains Mono", monospace;""")
         add.setStyleSheet("""
             QPushButton {
 				border: 0.5px solid #6c7086;
-                padding: 2px;
+                padding: 4px 10px 4px 10px;
+                font-size: 20px;
+                font-weight: 600;
+                font-family: "JetBrains Mono", monospace;
+                border-radius: 7px;
             }
             QPushButton:hover {
                 background: #313244;
 			}"""
 		)
+        self.completion.setStyleSheet("""
+            border: 0.5px solid #6c7086;
+            padding: 2px 2px 2px 4px;
+            font-size: 15px;
+            font-weight: 100;
+            font-family: "JetBrains Mono", monospace;
+        """)
+        self.lang.setStyleSheet("""
+            border: 0.5px solid #6c7086;
+            padding: 2px 2px 2px 4px;
+            font-size: 15px;
+            font-weight: 100;
+            font-family: "JetBrains Mono", monospace;
+        """)
 
     def show_context_menu(self, pos, widget):
             book_id = widget.property("book_id")
