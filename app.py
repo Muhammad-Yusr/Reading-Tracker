@@ -30,8 +30,8 @@ class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         
-        self.setWindowTitle("Reading Progress")
-
+        self.setWindowTitle("ReadSet")
+        self.setWindowIcon(QIcon("icon.png"))
         self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
         self.setFixedSize(1000, 600)
