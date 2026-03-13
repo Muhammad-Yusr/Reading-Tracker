@@ -9,6 +9,7 @@ import requests
 import sqlite3 as sq
 import cv2
 import os
+import time
 
 if not os.path.exists("images"):
     os.makedirs("images")
@@ -100,16 +101,12 @@ class Window(QMainWindow):
             id = item[0]
             text1 = item[1]
             text2 = item[2]
-            list1 = ["Planning to read", "Reading", "Completed"]
+            list1 = ["Reading", "Planning to read", "Completed"]
             text3 = list1[int(item[4])]
 
             book_widget = QWidget()
             book_layout = QVBoxLayout(book_widget)
-
-            label1 = QLabel(text1)
-            label1.setAlignment(Qt.AlignCenter)
-            label1.setWordWrap(True)
-            label1.setMinimumSize(200, 100)
+            book_widget.setMinimumHeight(400)
 
             label2 = QLabel(text2)
             label2.setAlignment(Qt.AlignTop)
@@ -121,7 +118,7 @@ class Window(QMainWindow):
             label3.setWordWrap(True)
             label3.setMinimumSize(200, 100)
             
-            for label in [label1, label2, label3]:
+            for label in [label2, label3]:
                 shadow = QGraphicsDropShadowEffect()
                 shadow.setBlurRadius(12)
                 shadow.setOffset(2, 2)
@@ -162,7 +159,6 @@ class Window(QMainWindow):
                 """)
 
             book_layout.addWidget(label2)
-            book_layout.addWidget(label1)
             book_layout.addWidget(label3)
 
             book_widget.setProperty("book_id", id)
@@ -197,7 +193,7 @@ class Window(QMainWindow):
         self.name.setCompleter(self.suggestions)
         self.name.returnPressed.connect(self.search)
         self.completion = QComboBox()
-        self.completion.addItems(["Planning to read", "Reading", "Completed"])
+        self.completion.addItems(["Reading", "Planning to read", "Completed"])
         form.addWidget(self.name)
         form.addWidget(self.lang)
         form.addWidget(self.author)
@@ -257,16 +253,27 @@ class Window(QMainWindow):
             action = menu.exec_(widget.mapToGlobal(pos))
 
             if action == addcover:
+                cu.execute("SELECT * FROM covers WHERE book_id = ?", (book_id,))
                 dialog = QFileDialog.getOpenFileName(
-                    caption = "Select Book Cover",
-                    directory = "./",
-                    filter="Images (*.png *.jpg *.jpeg)"
-                )
-                cu.execute("INSERT INTO covers (book_id, path) values (?, ?)", (book_id, dialog[0]))
+                        caption = "Select Book Cover",
+                        directory = "./",
+                        filter="Images (*.png *.jpg *.jpeg)"
+                    )
+                if not cu.fetchone():
+                    cu.execute("INSERT INTO covers (book_id, path) values (?, ?)", (book_id, dialog[0]))
+                else:
+                    cu.execute("SELECT title FROM book WHERE id = ?", (book_id,))
+                    text1 = cu.fetchone()[0]
+                    save_path = f"images/{text1.replace(' ', '')}.jpg"
+                    os.remove(save_path)
+                    cu.execute("UPDATE covers SET path = ?", (dialog[0],))
                 db.commit()
                 self.initUI()
             elif action == del_book:
-                pass
+                cu.execute("DELETE FROM book WHERE id = ?", (book_id,))
+                cu.execute("DELETE FROM covers WHERE book_id = ?", (book_id,))
+                db.commit()
+                self.initUI()
 
 
     def setLang(self, _):

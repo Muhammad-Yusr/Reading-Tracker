@@ -20,12 +20,12 @@ def view_books():
     for book in books:
         print(f"ID: {book[0]}, Title: {book[1]}, Author: {book[2]}, Category: {book[3]}, Completion: {book[4]}")
 def fetch_books():
-    cu.execute("SELECT * FROM book")
+    cu.execute("SELECT * FROM book ORDER BY completion")
     books = cu.fetchall()
     return books
 def delete_book():
     letters = input("Enter the first few letters of the book to delete: ")
     cu.execute("DELETE FROM book WHERE title LIKE ?", (f"{letters}%",))
     db.commit()
-    
+
 setup()
