@@ -9,7 +9,7 @@ import requests
 import sqlite3 as sq
 import cv2
 import os
-import time
+import random
 
 if not os.path.exists("images"):
     os.makedirs("images")
@@ -108,6 +108,11 @@ class Window(QMainWindow):
             book_layout = QVBoxLayout(book_widget)
             book_widget.setMinimumHeight(400)
 
+            label1 = QLabel(text1)
+            label1.setAlignment(Qt.AlignCenter)
+            label1.setWordWrap(True)
+            label1.setMinimumSize(200, 100)
+
             label2 = QLabel(text2)
             label2.setAlignment(Qt.AlignTop)
             label2.setWordWrap(True)
@@ -118,7 +123,7 @@ class Window(QMainWindow):
             label3.setWordWrap(True)
             label3.setMinimumSize(200, 100)
             
-            for label in [label2, label3]:
+            for label in [label1, label2, label3]:
                 shadow = QGraphicsDropShadowEffect()
                 shadow.setBlurRadius(12)
                 shadow.setOffset(2, 2)
@@ -159,7 +164,11 @@ class Window(QMainWindow):
                 """)
 
             book_layout.addWidget(label2)
+            book_layout.addWidget(label1)
             book_layout.addWidget(label3)
+
+            if os.path.exists(save_path):
+                book_layout.removeWidget(label1)
 
             book_widget.setProperty("book_id", id)
             book_widget.setContextMenuPolicy(Qt.CustomContextMenu)
